@@ -10,11 +10,11 @@ export async function GET(
   const t = await prisma.ticket.findUnique({ where: { token } });
   if (!t) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  // เหลือกี่คิวก่อนหน้าเรา (นับ WAITING/CALLED ที่สร้างก่อนหน้าเรา)
+  // เหลือกี่คิวก่อนหน้าเรา (นับ WAITING ที่สร้างก่อนหน้าเรา)
   const waitingAhead = await prisma.ticket.count({
     where: {
       serviceId: t.serviceId,
-      status: { in: ["WAITING", "CALLED"] },
+      status: "WAITING",
       createdAt: { lt: t.createdAt },
     },
   });
