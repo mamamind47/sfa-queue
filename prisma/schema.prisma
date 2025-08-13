@@ -1,0 +1,50 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum TicketStatus {
+  WAITING
+  CALLED
+  SERVED
+  SKIPPED
+  CANCELED
+}
+
+model Service {
+  id              Int      @id @default(autoincrement())
+  code            String   @unique
+  name            String
+  isOpen          Boolean  @default(true)
+  currentTicketId Int? @unique
+  currentTicket   Ticket?  @relation("CurrentTicket", fields: [currentTicketId], references: [id], onDelete: SetNull)
+  tickets         Ticket[]
+  createdAt       DateTime @default(now())
+}
+
+model Ticket {
+  id         Int          @id @default(autoincrement())
+  serviceId  Int
+  service    Service      @relation(fields: [serviceId], references: [id])
+  number     Int          // ลำดับภายในวันของ Service เช่น 1..n
+  displayNo  String       // เช่น A001
+  token      String       @unique
+  studentId  String?
+  name       String?
+  status     TicketStatus @default(WAITING)
+  createdAt  DateTime     @default(now())
+  calledAt   DateTime?
+  servedAt   DateTime?
+  skippedAt  DateTime?
+  canceledAt DateTime?
+
+  currentOf  Service?     @relation("CurrentTicket")
+
+  @@index([serviceId, createdAt])
+  @@index([status, createdAt])
+}
