@@ -2,6 +2,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+type WaitingCount = { serviceId: number; _count: { _all: number } };
+
 export async function GET() {
   // ดึง service ทั้งหมด + นับคิวที่กำลังรอของแต่ละ service (WAITING)
   const services = await prisma.service.findMany({
@@ -16,8 +18,10 @@ export async function GET() {
     _count: { _all: true },
   });
 
-  const waitingMap = new Map(
-    waitingCounts.map((w) => [w.serviceId, w._count._all])
+  const waitingMap = new Map<number, number>(
+    (waitingCounts as WaitingCount[]).map(
+      (w) => [w.serviceId, w._count._all] as const
+    )
   );
 
   return NextResponse.json(
