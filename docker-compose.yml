@@ -1,0 +1,10 @@
+version: '3'
+services:
+  sfa-queue:
+    build: .
+    ports:
+      - "8000:8000"
+    container_name: sfa-queue
+    restart: always
+    networks:
+      - sfa-network
