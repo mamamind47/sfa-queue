@@ -44,7 +44,7 @@ export function emitService(serviceId: number, payload: ServiceEvent) {
   // First, count waiting and emit the original event enriched with waiting
   prisma.ticket
     .count({ where: { serviceId, status: "WAITING" } })
-    .then(async (waiting) => {
+    .then(async (waiting: number) => {
       const enriched: ServiceEvent = { ...payload, waiting };
       events.emit(`service:${serviceId}`, enriched);
 
