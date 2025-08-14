@@ -4,7 +4,13 @@ services:
     build: .
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     container_name: sfa-queue
     restart: always
     networks:
       - sfa-network
+
+networks:
+  sfa-network:
+    external: true
