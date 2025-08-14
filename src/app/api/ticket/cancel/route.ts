@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-guard";
 import { emitService } from "@/lib/events";
+import type { Prisma } from "@prisma/client";
 
 export async function POST(
   req: NextRequest,
@@ -37,7 +38,7 @@ export async function POST(
   }
 
   // ถ้าเป็นใบ current (CALLED) ให้เคลียร์ current ออกจาก service ด้วย
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     // อัปเดตสถานะเป็น CANCELED
     const canceled = await tx.ticket.update({
       where: { id: ticket.id },
