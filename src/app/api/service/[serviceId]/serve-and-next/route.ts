@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { emitService } from "@/lib/events";
 import { requireAuth } from "@/lib/auth-guard";
 import type { NextRequest } from "next/server";
+import type { Prisma } from "@prisma/client";
 
 export async function POST(
   req: NextRequest,
@@ -20,7 +21,7 @@ export async function POST(
   }
 
   // อะตอมมิก: mark SERVED -> clear current -> pick next (ถ้ามี) -> mark CALLED
-  const { served, current, next } = await prisma.$transaction(async (tx) => {
+  const { served, current, next } = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const svc = await tx.service.findUnique({
       where: { id },
       include: { currentTicket: true },

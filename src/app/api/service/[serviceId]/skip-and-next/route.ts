@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { emitService } from "@/lib/events";
 import { requireAuth } from "@/lib/auth-guard";
 import type { NextRequest } from "next/server";
+import type { Prisma } from "@prisma/client";
 
 export async function POST(
   req: NextRequest,
@@ -19,7 +20,8 @@ export async function POST(
     return NextResponse.json({ error: "Invalid serviceId" }, { status: 400 });
   }
 
-  const { skipped, current, next } = await prisma.$transaction(async (tx) => {
+  const { skipped, current, next } = await prisma.$transaction(
+    async (tx: Prisma.TransactionClient) => {
     const svc = await tx.service.findUnique({
       where: { id },
       include: { currentTicket: true },
