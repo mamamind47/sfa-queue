@@ -2,6 +2,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+
+type ServiceLite = { id: number; code: string; name: string; isOpen: boolean };
 type WaitingCount = { serviceId: number; _count: { _all: number } };
 
 export async function GET() {
@@ -25,7 +27,7 @@ export async function GET() {
   );
 
   return NextResponse.json(
-    services.map((s) => ({
+    services.map((s: ServiceLite) => ({
       id: s.id,
       code: s.code,
       name: s.name,
