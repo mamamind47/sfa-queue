@@ -1,6 +1,7 @@
 // src/app/api/service/[serviceId]/skip/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 import { emitService } from "@/lib/events";
 import { requireAuth } from "@/lib/auth-guard";
 import type { NextRequest } from "next/server";
@@ -29,7 +30,7 @@ export async function POST(
     return NextResponse.json({ error: "No current ticket" }, { status: 404 });
   }
 
-  const skipped = await prisma.$transaction(async (tx) => {
+  const skipped = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const t = await tx.ticket.update({
       where: { id: svc.currentTicket!.id },
       data: { status: "SKIPPED", skippedAt: new Date() },
