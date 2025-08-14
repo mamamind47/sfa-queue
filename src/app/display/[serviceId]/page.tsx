@@ -217,7 +217,7 @@ const DisplayPage: FC<DisplayPageProps> = ({ params }) => {
 
       {/* KMUTT Logo */}
       <Image
-        src="/KMUTT_CI_Semi_Logo_en-bk.png"
+        src="/KMUTT_CI_Semi_Logo_en-full.png"
         alt="KMUTT Logo"
         width={200} // adjust as needed for display size
         height={80} // adjust as needed for display size
@@ -265,13 +265,27 @@ const DisplayPage: FC<DisplayPageProps> = ({ params }) => {
 
       {/* Announce toggle */}
       <button
-        onClick={() => setAudioEnabled(true)}
+        onClick={() => {
+          setAudioEnabled(true);
+          // Try to unlock audio on mobile Safari/Chrome by playing a tiny silent sound
+          try {
+            if (audioRef.current) {
+              const silentWav =
+                "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=";
+              audioRef.current.src = silentWav;
+              audioRef.current.play().catch(() => {});
+            }
+          } catch {}
+        }}
         disabled={audioEnabled}
         title={audioEnabled ? "พร้อมประกาศ" : "เปิดเสียงประกาศ"}
         className={`fixed bottom-5 right-5 rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-sm shadow-sm backdrop-blur ${audioEnabled ? "cursor-default text-slate-500" : "hover:bg-white"}`}
       >
         {audioEnabled ? "🔊 พร้อมประกาศ" : "🔈 เปิดเสียงประกาศ"}
       </button>
+
+      {/* Hidden audio element for announcements */}
+      <audio ref={audioRef} preload="auto" className="hidden" />
     </div>
   );
 };

@@ -1,5 +1,14 @@
 "use client";
 import { useEffect, useState, useCallback, useRef } from "react";
+import { SkipForward, RotateCcw, Check, StepForward } from "lucide-react";
+
+async function logout() {
+  try {
+    await fetch("/api/auth/logout", { method: "POST" });
+  } finally {
+    window.location.href = "/staff/login";
+  }
+}
 
 type Ticket = {
   id: number;
@@ -49,7 +58,7 @@ export default function Staff() {
   const canServeNext = !!current && !!next; // actions that need both current and next
 
   const btnClass = (enabled: boolean) =>
-    `px-3 py-2 border rounded ${enabled ? '' : 'opacity-50 cursor-not-allowed'}`;
+    `px-3 py-2 rounded-lg border shadow-sm flex items-center ${enabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}`;
 
   const subscribe = useCallback((id: number) => {
     // close previous SSE if exists
@@ -141,98 +150,124 @@ export default function Staff() {
 
 
   return (
-    <main className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Staff Panel</h1>
-
-      <div className="flex gap-2 flex-wrap">
-        {services.map((s) => (
-          <button
-            key={s.id}
-            onClick={() => selectService(s)}
-            className={`px-3 py-2 border rounded ${
-              active?.id === s.id ? "bg-black text-white" : ""
-            }`}
-          >
-            {s.code} – {s.name} {s.isOpen ? "" : "(ปิดรับคิว)"}
-          </button>
-        ))}
-      </div>
-
-      {active && (
-        <div className="space-y-3">
-          <div className="text-lg flex items-center gap-3 flex-wrap">
-            <span>
-              บริการ: <b>{active.code}</b> – {active.name} | รออยู่: <b>{waiting}</b>
-            </span>
+    <main className="p-4 md:p-6 space-y-6">
+      <div className="sticky top-0 z-20 bg-white border-b border-gray-200 flex flex-wrap items-center justify-between gap-3 py-3 px-4 md:px-6">
+        <h1 className="text-2xl font-bold">Staff Panel</h1>
+        <div className="flex gap-2 flex-wrap items-center">
+          {active && (
             <button
               onClick={() => window.open(`/display/${active.id}`, "_blank")}
-              className="px-3 py-1 border rounded"
+              className="px-3 py-1 border rounded hover:bg-gray-100"
               title="เปิดหน้า Display ในแท็บใหม่"
             >
               เปิดหน้า Display
             </button>
-          </div>
-          <div className="grid grid-cols-2 gap-4 max-w-xl">
-            <div className="border rounded p-4">
-              <div className="opacity-70 text-sm">กำลังเรียก</div>
-              <div className="text-4xl font-bold">
-                {current?.displayNo ?? "—"}
-              </div>
-              <div>{current?.name ?? ""}</div>
+          )}
+          <button
+            onClick={() => logout()}
+            className="px-3 py-1 border rounded hover:bg-gray-100"
+          >
+            ออกจากระบบ
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <label className="block mb-2 font-semibold text-gray-700">เลือกบริการ</label>
+        <div className="flex gap-3 flex-wrap">
+          {services.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => selectService(s)}
+              className={`group rounded-xl border px-4 py-3 shadow-sm transition-colors duration-200 ${
+                active?.id === s.id
+                  ? "bg-black text-white border-black"
+                  : "border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              <div className="font-semibold">{s.code} – {s.name}</div>
+              {!s.isOpen && <div className="text-sm text-red-600">(ปิดรับคิว)</div>}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {active && (
+        <div className="space-y-6 max-w-4xl">
+          <div className="flex flex-wrap items-center gap-6">
+            <div className="px-4 py-2 border rounded-lg shadow-sm bg-gray-50">
+              <span className="font-semibold">บริการ:</span> <span>{active.code} – {active.name}</span>
             </div>
-            <div className="border rounded p-4">
-              <div className="opacity-70 text-sm">คิวถัดไป</div>
-              <div className="text-4xl font-bold">{next?.displayNo ?? "—"}</div>
-              <div>{next?.name ?? ''}</div>
+            <div className="px-4 py-2 border rounded-lg shadow-sm bg-gray-50">
+              <span className="font-semibold">รออยู่:</span> <span>{waiting}</span>
             </div>
           </div>
 
-          <div className="flex gap-2 flex-wrap">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="rounded-2xl border p-6 flex flex-col items-center justify-center shadow-sm">
+              <div className="opacity-70 text-sm mb-2">กำลังเรียก</div>
+              <div className="text-6xl font-extrabold leading-none">{current?.displayNo ?? "—"}</div>
+              <div className="text-2xl mt-2">{current?.name ?? ""}</div>
+            </div>
+            <div className="rounded-2xl border p-6 flex flex-col items-center justify-center shadow-sm">
+              <div className="opacity-70 text-sm mb-2">คิวถัดไป</div>
+              <div className="text-6xl font-extrabold leading-none">{next?.displayNo ?? "—"}</div>
+              <div className="text-2xl mt-2">{next?.name ?? ''}</div>
+            </div>
+          </div>
+
+          <div className="flex gap-3 flex-wrap">
             <button
-              className={btnClass(canNext)}
+              className={`${btnClass(canNext)} bg-blue-500 text-white hover:bg-blue-600`}
               disabled={!canNext}
               onClick={() => active && canNext && call(active.id, "next")}
             >
+              <StepForward className="w-4 h-4 mr-1" />
               Next
             </button>
 
             <button
-              className={btnClass(canCurrent)}
+              className={`${btnClass(canCurrent)} bg-yellow-500 text-white hover:bg-yellow-600`}
               disabled={!canCurrent}
               onClick={() => active && canCurrent && call(active.id, "recall")}
             >
+              <RotateCcw className="w-4 h-4 mr-1" />
               Recall
             </button>
 
             <button
-              className={btnClass(canCurrent)}
+              className={`${btnClass(canCurrent)} bg-red-500 text-white hover:bg-red-600`}
               disabled={!canCurrent}
               onClick={() => active && canCurrent && call(active.id, "skip")}
             >
+              <SkipForward className="w-4 h-4 mr-1" />
               Skip
             </button>
 
             <button
-              className={btnClass(canCurrent)}
+              className={`${btnClass(canCurrent)} bg-green-500 text-white hover:bg-green-600`}
               disabled={!canCurrent}
               onClick={() => active && canCurrent && call(active.id, "serve")}
             >
+              <Check className="w-4 h-4 mr-1" />
               Serve
             </button>
 
             <button
-              className={btnClass(canServeNext)}
+              className={`${btnClass(canServeNext)} bg-green-600 text-white hover:bg-green-700`}
               disabled={!canServeNext}
               onClick={() => active && canServeNext && call(active.id, "serve-and-next")}
             >
+              <Check className="w-4 h-4 mr-1" />
               Serve & Next
             </button>
 
             <button
-              className={btnClass(canServeNext)}
+              className={`${btnClass(canServeNext)} bg-red-600 text-white hover:bg-red-700`}
               disabled={!canServeNext}
               onClick={() => active && canServeNext && call(active.id, "skip-and-next")}
             >
+              <SkipForward className="w-4 h-4 mr-1" />
               Skip & Next
             </button>
           </div>
